@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+
+  <body>
+    <h1>Open the console</h1>
+
+    <script>
+      var socket = io.connect("http://localhost:3000", {
+        forceNew: true,
+      });
+
+      socket.on("new post", function (data) {
+        console.log(data);
+      });
+
+      socket.on("new notification", function (data) {
+        console.log(data);
+      });
+    </script>
+  </body>
+</html>
