@@ -1,6 +1,6 @@
 const multer = require("multer");
 const {
-  api: { host, port, filesRoute },
+  api: { url, filesRoute },
 } = require("../config");
 
 const upload = multer({
@@ -8,7 +8,7 @@ const upload = multer({
 });
 
 function getFileUrl(file) {
-  return `${host}:${port}/${filesRoute}/${file}`;
+  return `${url}/${filesRoute}/${file}`;
 }
 
 module.exports = { upload, getFileUrl };
