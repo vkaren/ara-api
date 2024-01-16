@@ -13,9 +13,22 @@ const {
 } = require("./middlewares/error.handler");
 const {
   api: { port },
+  frontend,
 } = require("../config");
 
-app.use(cors());
+cors({
+  origin: frontend.url,
+  credentials: true,
+  methods: ["GET", "PUT", "PATCH", "POST", "DELETE", "UPDATE", "OPTIONS"],
+  allowedHeaders: [
+    "X-Requested-With",
+    "X-HTTP-Method-Override",
+    "Content-Type",
+    "Accept",
+    "Authorization",
+    "X-Authorization",
+  ],
+});
 app.use(express.json());
 
 router(app);
