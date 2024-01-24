@@ -1,14 +1,20 @@
 const { models } = require("../../../libs/sequelize");
 
 async function likePost(data) {
-  try {
-    const query = getQuery(data);
-    const like = await models.Like.create(query);
+  const query = getQuery(data);
+  const like = await models.Like.create(query);
 
-    return like;
-  } catch (err) {
-    console.log(err);
-  }
+  return like;
+}
+
+async function getLikes(userId) {
+  const query = {
+    where: { user_id: userId },
+  };
+
+  const likes = await models.Like.findAll(query);
+
+  return likes;
 }
 
 async function dislikePost(data) {
@@ -35,5 +41,6 @@ function getQuery(data) {
 }
 module.exports = {
   like: likePost,
+  get: getLikes,
   dislike: dislikePost,
 };

@@ -1,5 +1,6 @@
 const boom = require("@hapi/boom");
 const { getFileUrl } = require("../../../libs/multer");
+const { socket } = require("../../../libs/socket");
 const notifController = require("../notification/controller");
 const store = require("./store");
 
@@ -23,6 +24,8 @@ async function createReply({
 
   const newReply = await store.create(data);
   const reply = await getReply(newReply.id);
+
+  socket.io.emit("new reply", { reply });
 
   await sendNotification(newReply);
 

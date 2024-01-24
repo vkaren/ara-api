@@ -9,6 +9,11 @@ const likeSchema = Joi.object({
   type,
 });
 
+const getLikesSchema = Joi.object({
+  id: id.required(),
+});
+
 module.exports = {
   likeSchema,
+  getLikesSchema,
 };

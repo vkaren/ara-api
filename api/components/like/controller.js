@@ -1,4 +1,5 @@
 const boom = require("@hapi/boom");
+const { socket } = require("../../../libs/socket");
 const notifController = require("../notification/controller");
 const postController = require("../post/controller");
 const replyController = require("../reply/controller");
@@ -11,15 +12,25 @@ async function likePost(data) {
 
   const like = await store.like(data);
 
+  socket.io.emit("new like", { like: data });
+
   await sendNotification(data);
 
   return like;
 }
 
-async function dislikePost(data) {
-  const dislike = await store.dislike(data);
+async function getLikes({ id }) {
+  const likes = await store.get(id);
 
-  return { deletedLike: dislike };
+  return likes;
+}
+
+async function dislikePost(data) {
+  await store.dislike(data);
+
+  socket.io.emit("new dislike", { dislike: data });
+
+  return { deletedLike: data };
 }
 
 async function sendNotification(like) {
@@ -45,5 +56,6 @@ async function sendNotification(like) {
 
 module.exports = {
   likePost,
+  getLikes,
   dislikePost,
 };
