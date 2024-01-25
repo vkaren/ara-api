@@ -3,8 +3,8 @@ const { getFileUrl } = require("../../../libs/multer");
 const store = require("./store");
 const authController = require("../auth/controller");
 
-async function listUsers() {
-  const list = await store.list();
+async function listUsers({ filter = null }) {
+  const list = await store.list(filter);
   return list;
 }
 

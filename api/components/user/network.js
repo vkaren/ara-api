@@ -41,7 +41,7 @@ router.delete(
 
 async function getListUsers(req, res, next) {
   try {
-    const users = await controller.listUsers();
+    const users = await controller.listUsers(req.query);
     res.status(200).json(users);
   } catch (err) {
     next(err);

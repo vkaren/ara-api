@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { models } = require("../../../libs/sequelize");
 
 async function createUser(data) {
@@ -22,10 +23,24 @@ async function deleteUser(id) {
   return userDeleted;
 }
 
-async function listUsers() {
-  const list = await models.User.findAll({
+async function listUsers(filter) {
+  const query = {
     attributes: ["id", "username", "nickname", "profile_photo"],
-  });
+  };
+
+  if (filter) {
+    query.where = {
+      [Op.or]: [
+        { nickname: filter },
+        {
+          username: filter,
+        },
+      ],
+    };
+  }
+
+  const list = await models.User.findAll(query);
+
   return list;
 }
 
