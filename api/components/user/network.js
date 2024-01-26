@@ -12,12 +12,7 @@ const authOwner = {
 };
 
 router.get("/", getListUsers);
-router.get(
-  "/:id",
-  validatorHandler(getUserSchema, "params"),
-  authenticateHandler(authOwner),
-  getUser
-);
+router.get("/:id", validatorHandler(getUserSchema, "params"), getUser);
 router.post(
   "/",
   upload.single("profile_photo"),

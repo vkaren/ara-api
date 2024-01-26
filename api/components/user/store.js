@@ -74,6 +74,18 @@ async function getUser(param) {
           model: models.Post,
           as: "posts",
           attributes: ["id", "content", "inserted_image", "createdAt"],
+          include: [
+            {
+              model: models.User,
+              as: "author",
+              attributes: ["id", "username", "nickname", "profile_photo"],
+            },
+            {
+              model: models.Like,
+              as: "likes",
+              attributes: ["id", "user_id"],
+            },
+          ],
         },
         {
           model: models.Like,

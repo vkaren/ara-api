@@ -14,10 +14,10 @@ const userSchema = Joi.object({
 });
 
 const updateUserSchema = Joi.object({
-  nickname,
-  username,
-  password,
-  bio,
+  nickname: nickname.allow(""),
+  username: username.allow(""),
+  password: password.allow(""),
+  bio: bio.allow(""),
 });
 
 const getUserSchema = Joi.object({
