@@ -1,14 +1,18 @@
 const {
-  database: { uri },
+  database: { development },
 } = require("../config");
 
 module.exports = {
   development: {
-    url: uri,
+    username: development.username,
+    password: development.password,
+    database: development.database,
+    host: development.host,
+    port: development.port,
     dialect: "postgres",
   },
   production: {
-    url: uri,
+    use_env_variable: "DATABASE_URL",
     dialect: "postgres",
     dialectOptions: {
       ssl: {

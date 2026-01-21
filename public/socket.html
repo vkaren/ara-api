@@ -7,9 +7,12 @@
     <h1>Open the console</h1>
 
     <script>
-      var socket = io.connect("http://localhost:3000", {
-        forceNew: true,
-      });
+      const API_URL =
+        location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://ara-rl0v.onrender.com";
+
+      const socket = io(API_URL, { forceNew: true });
 
       socket.on("new post", function (data) {
         console.log(data);
