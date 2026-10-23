@@ -26,9 +26,9 @@ async function getPost(id) {
   return post;
 }
 
-async function deletePost(id) {
+async function deletePost(id, author_id) {
   const post = await models.Post.destroy({
-    where: { id },
+    where: { id, author_id },
   });
 
   return post;

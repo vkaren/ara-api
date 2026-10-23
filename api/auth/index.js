@@ -17,7 +17,7 @@ function check(token, owner) {
       throw boom.unauthorized("Invalid token");
     }
 
-    if (decoded.id !== owner) {
+    if (String(decoded.id) !== String(owner)) {
       throw boom.unauthorized("Invalid id");
     }
 

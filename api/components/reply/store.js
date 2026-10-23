@@ -5,9 +5,9 @@ async function createReply(data) {
   return reply;
 }
 
-async function deleteReply(id) {
+async function deleteReply(id, author_id) {
   const reply = await models.Reply.destroy({
-    where: { id },
+    where: { id, author_id },
   });
   return reply;
 }

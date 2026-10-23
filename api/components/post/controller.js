@@ -36,10 +36,14 @@ async function createPost({ author_id, content, inserted_image }) {
   return post;
 }
 
-async function deletePost({ post_id }) {
+async function deletePost({ author_id, post_id }) {
   await getPost({ id: post_id });
 
-  await store.delete(post_id);
+  const deletedPosts = await store.delete(post_id, author_id);
+
+  if (deletedPosts === 0) {
+    throw boom.forbidden("You cannot delete this post");
+  }
 
   return { postDeleted: post_id };
 }

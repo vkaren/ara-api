@@ -4,24 +4,20 @@ const auth = require("../../api/auth");
 function authenticate(ownerInfo) {
   return (req, res, next) => {
     try {
-      let authHeader = req.headers.authorization;
+      const authHeader = req.headers.authorization;
 
       if (!authHeader) {
-        next(boom.unauthorized("Missing header authorization"));
-      }
-      if (!authHeader.includes("Bearer")) {
-        next(boom.unauthorized("Invalid format"));
+        return next(boom.unauthorized("Missing header authorization"));
       }
 
-      let token = authHeader.split(" ")[1];
-
-      if (!token) {
-        next(boom.unauthorized("Missing token"));
+      const [scheme, token] = authHeader.split(" ");
+      if (scheme !== "Bearer" || !token) {
+        return next(boom.unauthorized("Invalid authorization format"));
       }
 
-      let owner = req[ownerInfo.req][ownerInfo.prop] - "";
+      const owner = req[ownerInfo.req][ownerInfo.prop];
 
-      auth.check(token, owner);
+      auth.check(token, String(owner));
       next();
     } catch (err) {
       next(boom.unauthorized(err.message));

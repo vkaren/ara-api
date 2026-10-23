@@ -32,10 +32,14 @@ async function createReply({
   return reply;
 }
 
-async function deleteReply({ reply_id }) {
+async function deleteReply({ author_id, reply_id }) {
   await getReply(reply_id);
 
-  await store.delete(reply_id);
+  const deletedReplies = await store.delete(reply_id, author_id);
+
+  if (deletedReplies === 0) {
+    throw boom.forbidden("You cannot delete this reply");
+  }
 
   return { replyDeleted: reply_id };
 }
