@@ -4,6 +4,7 @@ const cors = require("cors");
 const app = express();
 const server = require("http").Server(app);
 const socket = require("../libs/socket");
+const sequelize = require("../libs/sequelize");
 const router = require("./router");
 const {
   logErrors,
@@ -42,8 +43,18 @@ app.use(errorHandler);
 
 app.use(express.static("public"));
 
-socket.connect(server);
+async function start() {
+  try {
+    await sequelize.authenticate();
+    socket.connect(server);
 
-server.listen(port, () => {
-  console.log(`Api listening on port ${port}`);
-});
+    server.listen(port, () => {
+      console.log(`Api listening on port ${port}`);
+    });
+  } catch (error) {
+    console.error("Unable to connect to the database", error);
+    process.exitCode = 1;
+  }
+}
+
+start();
