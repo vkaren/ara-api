@@ -1,5 +1,6 @@
 const boom = require("@hapi/boom");
 const { getFileUrl } = require("../../../libs/multer");
+const sequelize = require("../../../libs/sequelize");
 const store = require("./store");
 const authController = require("../auth/controller");
 
@@ -8,8 +9,8 @@ async function listUsers({ filter = null }) {
   return list;
 }
 
-async function getUser({ id }) {
-  const user = await store.get(id);
+async function getUser({ id }, options = {}) {
+  const user = await store.get(id, options);
 
   if (!user) {
     throw boom.notFound(`User ${id} doesn't exist`);
@@ -25,30 +26,35 @@ async function createUser({
   bio,
   profile_photo,
 }) {
-  await isUsernameAlreadyCreated(username);
+  return sequelize.transaction(async (transaction) => {
+    await isUsernameAlreadyCreated(username, { transaction });
 
-  const data = {
-    nickname,
-    username,
-  };
+    const data = {
+      nickname,
+      username,
+    };
 
-  if (bio) {
-    data.bio = bio;
-  }
+    if (bio) {
+      data.bio = bio;
+    }
 
-  if (profile_photo) {
-    data.profile_photo = getFileUrl(profile_photo);
-  }
+    if (profile_photo) {
+      data.profile_photo = getFileUrl(profile_photo);
+    }
 
-  const newUser = await store.create(data);
+    const newUser = await store.create(data, { transaction });
 
-  await authController.create({
-    user_id: newUser.id,
-    username: newUser.username,
-    password,
+    await authController.create(
+      {
+        user_id: newUser.id,
+        username: newUser.username,
+        password,
+      },
+      { transaction }
+    );
+
+    return newUser;
   });
-
-  return newUser;
 }
 
 async function updateUser({
@@ -59,49 +65,55 @@ async function updateUser({
   bio,
   profile_photo,
 }) {
-  await getUser({ id });
+  return sequelize.transaction(async (transaction) => {
+    await getUser({ id }, { transaction });
 
-  const data = {};
+    const userData = {};
+    const authData = {};
 
-  if (username || password) {
     if (username) {
-      await isUsernameAlreadyCreated(username);
-
-      data.username = username;
+      await isUsernameAlreadyCreated(username, { transaction });
+      userData.username = username;
+      authData.username = username;
     }
 
     if (password) {
-      data.password = password;
+      authData.password = password;
     }
 
-    await authController.update({ ...data, user_id: id });
-  }
+    if (Object.keys(authData).length > 0) {
+      await authController.update(
+        { ...authData, user_id: id },
+        { transaction }
+      );
+    }
 
-  if (nickname) {
-    data.nickname = nickname;
-  }
-  if (bio) {
-    data.bio = bio;
-  }
-  if (profile_photo) {
-    data.profile_photo = getFileUrl(profile_photo);
-  }
+    if (nickname) {
+      userData.nickname = nickname;
+    }
+    if (bio) {
+      userData.bio = bio;
+    }
+    if (profile_photo) {
+      userData.profile_photo = getFileUrl(profile_photo);
+    }
 
-  const newUser = await store.update(id, data);
-  return newUser;
+    return store.update(id, userData, { transaction });
+  });
 }
 
 async function deleteUser({ id }) {
-  await getUser({ id });
+  return sequelize.transaction(async (transaction) => {
+    await getUser({ id }, { transaction });
+    await store.delete(id, { transaction });
+    await authController.delete(id, { transaction });
 
-  await store.delete(id);
-  await authController.delete(id);
-
-  return { userDeleted: id };
+    return { userDeleted: id };
+  });
 }
 
-async function isUsernameAlreadyCreated(username) {
-  const isAlreadyCreated = await store.get(username);
+async function isUsernameAlreadyCreated(username, options = {}) {
+  const isAlreadyCreated = await store.get(username, options);
 
   if (isAlreadyCreated) {
     throw boom.conflict(`Username ${username} already exists`);

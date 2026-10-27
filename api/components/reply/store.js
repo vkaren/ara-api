@@ -1,7 +1,7 @@
 const { models } = require("../../../libs/sequelize");
 
-async function createReply(data) {
-  const reply = await models.Reply.create(data);
+async function createReply(data, options = {}) {
+  const reply = await models.Reply.create(data, options);
   return reply;
 }
 
@@ -12,7 +12,7 @@ async function deleteReply(id, author_id) {
   return reply;
 }
 
-async function getReply(id) {
+async function getReply(id, options = {}) {
   const reply = await models.Reply.findOne({
     include: [
       {
@@ -39,6 +39,7 @@ async function getReply(id) {
       "createdAt",
     ],
     where: { id },
+    ...options,
   });
   return reply;
 }

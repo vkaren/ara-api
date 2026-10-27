@@ -1,7 +1,7 @@
 const { models } = require("../../../libs/sequelize");
 
-async function followUser(data) {
-  const follow = await models.Follow.create(data);
+async function followUser(data, options = {}) {
+  const follow = await models.Follow.create(data, options);
   return follow;
 }
 

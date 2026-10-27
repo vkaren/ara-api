@@ -17,11 +17,11 @@ async function listPosts(author_id) {
   return posts;
 }
 
-async function getPost(id) {
+async function getPost(id, options = {}) {
   const query = getCommonQuery();
   query.where = { id };
 
-  const post = await models.Post.findOne(query);
+  const post = await models.Post.findOne({ ...query, ...options });
 
   return post;
 }

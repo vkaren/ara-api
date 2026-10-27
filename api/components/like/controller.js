@@ -1,5 +1,6 @@
 const boom = require("@hapi/boom");
 const { socket } = require("../../../libs/socket");
+const sequelize = require("../../../libs/sequelize");
 const notifController = require("../notification/controller");
 const postController = require("../post/controller");
 const replyController = require("../reply/controller");
@@ -10,11 +11,13 @@ async function likePost(data) {
     throw boom.conflict("Type property must be 'reply' or 'post'");
   }
 
-  const like = await store.like(data);
+  const like = await sequelize.transaction(async (transaction) => {
+    const like = await store.like(data, { transaction });
+    await sendNotification(data, { transaction });
+    return like;
+  });
 
   socket.io.emit("new like", { like: data });
-
-  await sendNotification(data);
 
   return like;
 }
@@ -33,25 +36,28 @@ async function dislikePost(data) {
   return { deletedLike: data };
 }
 
-async function sendNotification(like) {
+async function sendNotification(like, options = {}) {
   const notifInfo = {
     user_from: like.user_id,
     type: "like",
   };
 
   if (like.type === "post") {
-    const post = await postController.getPost({ id: like.message_id });
+    const post = await postController.getPost(
+      { id: like.message_id },
+      options
+    );
 
     notifInfo.user_to = post.author.id;
     notifInfo.post_id = post.id;
   } else {
-    const reply = await replyController.getReply(like.message_id);
+    const reply = await replyController.getReply(like.message_id, options);
 
     notifInfo.user_to = reply.author.id;
     notifInfo.post_id = reply.replying_to_post;
   }
 
-  return await notifController.notifyUser(notifInfo);
+  return await notifController.notifyUser(notifInfo, options);
 }
 
 module.exports = {

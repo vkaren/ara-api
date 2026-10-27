@@ -8,8 +8,8 @@ async function listPosts({ author_id = null }) {
   return posts;
 }
 
-async function getPost({ id }) {
-  const post = await store.get(id);
+async function getPost({ id }, options = {}) {
+  const post = await store.get(id, options);
 
   if (!post) {
     throw boom.notFound(`Post ${id} doesn't exist`);

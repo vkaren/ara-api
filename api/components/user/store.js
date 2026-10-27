@@ -1,23 +1,24 @@
 const { Op } = require("sequelize");
 const { models } = require("../../../libs/sequelize");
 
-async function createUser(data) {
-  const user = await models.User.create(data);
+async function createUser(data, options = {}) {
+  const user = await models.User.create(data, options);
   return user;
 }
 
-async function updateUser(id, data) {
-  const userToUpdate = await getUser(id);
+async function updateUser(id, data, options = {}) {
+  const userToUpdate = await getUser(id, options);
   const updatedUser = await userToUpdate.update({
     ...data,
-  });
+  }, options);
 
   return updatedUser;
 }
 
-async function deleteUser(id) {
+async function deleteUser(id, options = {}) {
   const userDeleted = await models.User.destroy({
     where: { id },
+    ...options,
   });
 
   return userDeleted;
@@ -44,7 +45,7 @@ async function listUsers(filter) {
   return list;
 }
 
-async function getUser(param) {
+async function getUser(param, options = {}) {
   try {
     const query = {
       include: [
@@ -101,7 +102,7 @@ async function getUser(param) {
       query.where = { id: param - "" };
     }
 
-    const list = await models.User.findOne(query);
+    const list = await models.User.findOne({ ...query, ...options });
     return list;
   } catch (err) {
     throw new Error(err);

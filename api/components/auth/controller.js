@@ -25,19 +25,19 @@ async function login({ username, password }) {
   }
 }
 
-async function create({ user_id, username, password }) {
+async function create({ user_id, username, password }, options = {}) {
   const data = {
     user_id,
     username,
     password: await encodePassword(password),
   };
 
-  const auth = await store.create(data);
+  const auth = await store.create(data, options);
 
   return auth;
 }
 
-async function update({ user_id, username, password }) {
+async function update({ user_id, username, password }, options = {}) {
   const data = {};
 
   if (username) {
@@ -48,13 +48,13 @@ async function update({ user_id, username, password }) {
     data.password = await encodePassword(password);
   }
 
-  const updatedAuth = await store.update(user_id, data);
+  const updatedAuth = await store.update(user_id, data, options);
 
   return updatedAuth;
 }
 
-async function deleteAuth(user_id) {
-  const deletedAuth = await store.delete(user_id);
+async function deleteAuth(user_id, options = {}) {
+  const deletedAuth = await store.delete(user_id, options);
   return deletedAuth;
 }
 

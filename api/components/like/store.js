@@ -1,8 +1,8 @@
 const { models } = require("../../../libs/sequelize");
 
-async function likePost(data) {
+async function likePost(data, options = {}) {
   const query = getQuery(data);
-  const like = await models.Like.create(query);
+  const like = await models.Like.create(query, options);
 
   return like;
 }

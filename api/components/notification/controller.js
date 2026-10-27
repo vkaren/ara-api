@@ -8,7 +8,7 @@ async function getUserNotifications({ user_id }) {
   return notifications;
 }
 
-async function notifyUser({ user_from, user_to, type, post_id }) {
+async function notifyUser({ user_from, user_to, type, post_id }, options = {}) {
   if (!user_from || !user_to || !type) {
     throw boom.conflict("Missing properties");
   }
@@ -32,7 +32,7 @@ async function notifyUser({ user_from, user_to, type, post_id }) {
     post_id,
   };
 
-  const notification = await store.notify(data);
+  const notification = await store.notify(data, options);
 
   socket.io.emit("new notification", { notificationFor: notification.user_to });
 

@@ -1,7 +1,7 @@
 const { models } = require("../../../libs/sequelize");
 
-async function notifyUser(data) {
-  const notification = await models.Notification.create(data);
+async function notifyUser(data, options = {}) {
+  const notification = await models.Notification.create(data, options);
   return notification;
 }
 
