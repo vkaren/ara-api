@@ -15,7 +15,10 @@ const {
 const {
   api: { port },
   frontend,
+  validateRuntimeConfig,
 } = require("../config");
+
+validateRuntimeConfig();
 
 app.use(
   cors({

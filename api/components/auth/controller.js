@@ -1,13 +1,16 @@
 const bcrypt = require("bcrypt");
 const boom = require("@hapi/boom");
 const auth = require("../../auth");
+const {
+  security: { bcryptRounds },
+} = require("../../../config");
 const store = require("./store");
 
 async function login({ username, password }) {
   const user = await store.get(username);
 
   if (!user) {
-    throw boom.conflict(`User ${username} doesn't exist`);
+    throw boom.unauthorized("Invalid credentials");
   }
 
   const validPassword = await bcrypt.compare(password, user.password);
@@ -21,7 +24,7 @@ async function login({ username, password }) {
 
     return { user_id: user.user_id, token };
   } else {
-    throw boom.unauthorized("Invalid password");
+    throw boom.unauthorized("Invalid credentials");
   }
 }
 
@@ -59,7 +62,7 @@ async function deleteAuth(user_id, options = {}) {
 }
 
 async function encodePassword(password) {
-  return await bcrypt.hash(password, 5);
+  return await bcrypt.hash(password, bcryptRounds);
 }
 
 module.exports = {
