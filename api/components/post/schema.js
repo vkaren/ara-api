@@ -2,6 +2,10 @@ const Joi = require("joi");
 
 const id = Joi.number().integer();
 const content = Joi.string();
+const pagination = {
+  page: Joi.number().integer().min(1),
+  limit: Joi.number().integer().min(1).max(100),
+};
 
 const postSchema = Joi.object({
   author_id: id.required(),
@@ -14,6 +18,7 @@ const getPostSchema = Joi.object({
 
 const getUserPostsSchema = Joi.object({
   author_id: id,
+  ...pagination,
 });
 
 const deletePostSchema = Joi.object({

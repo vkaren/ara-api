@@ -2,8 +2,8 @@ const boom = require("@hapi/boom");
 const { socket } = require("../../../libs/socket");
 const store = require("./store");
 
-async function getUserNotifications({ user_id }) {
-  const notifications = await store.get(user_id);
+async function getUserNotifications({ user_id, page, limit }) {
+  const notifications = await store.get(user_id, { page, limit });
 
   return notifications;
 }
@@ -43,7 +43,7 @@ async function updateSeenState({ user_id }) {
   const userNotifs = await getUserNotifications({ user_id });
   let updatedNotifications = [0];
 
-  if (userNotifs.length > 0) {
+  if (userNotifs.data.length > 0) {
     updatedNotifications = await store.update(user_id);
   }
 

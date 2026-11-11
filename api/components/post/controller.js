@@ -3,9 +3,8 @@ const { getFileUrl } = require("../../../libs/multer");
 const { socket } = require("../../../libs/socket");
 const store = require("./store");
 
-async function listPosts({ author_id = null }) {
-  const posts = await store.list(author_id);
-  return posts;
+async function listPosts({ author_id = null, page, limit }) {
+  return await store.list(author_id, { page, limit });
 }
 
 async function getPost({ id }, options = {}) {

@@ -1,7 +1,8 @@
 const express = require("express");
+const Joi = require("joi");
 const router = express.Router();
 const controller = require("./controller");
-const { getUserNotificationsSchema } = require("./schema");
+const { getUserNotificationsSchema, pagination } = require("./schema");
 const validatorHandler = require("../../middlewares/validator.handler");
 const authenticateHandler = require("../../middlewares/auth.handler");
 
@@ -13,6 +14,7 @@ const authOwner = {
 router.get(
   "/:user_id",
   validatorHandler(getUserNotificationsSchema, "params"),
+  validatorHandler(Joi.object(pagination), "query"),
   authenticateHandler(authOwner),
   getUserNotifications
 );
@@ -25,7 +27,7 @@ router.patch(
 
 async function getUserNotifications(req, res, next) {
   try {
-    const notifications = await controller.getUserNotifications(req.params);
+    const notifications = await controller.getUserNotifications({ ...req.params, ...req.query });
     res.status(200).json(notifications);
   } catch (err) {
     next(err);

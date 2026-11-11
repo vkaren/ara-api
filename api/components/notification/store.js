@@ -1,12 +1,14 @@
 const { models } = require("../../../libs/sequelize");
+const { parsePagination, buildPagination } = require("../../utils/pagination");
 
 async function notifyUser(data, options = {}) {
   const notification = await models.Notification.create(data, options);
   return notification;
 }
 
-async function getUserNotifications(userId) {
-  const notifications = await models.Notification.findAll({
+async function getUserNotifications(userId, requestedPagination) {
+  const pagination = parsePagination(requestedPagination);
+  const result = await models.Notification.findAndCountAll({
     where: { user_to: userId },
     include: [
       {
@@ -16,8 +18,14 @@ async function getUserNotifications(userId) {
       },
     ],
     attributes: ["id", "type", "post_id", "seen"],
+    limit: pagination.limit,
+    offset: pagination.offset,
+    order: [["id", "DESC"]],
   });
-  return notifications;
+  return {
+    data: result.rows,
+    pagination: buildPagination({ ...pagination, count: result.count }),
+  };
 }
 
 async function updateUserNotifications(userId) {

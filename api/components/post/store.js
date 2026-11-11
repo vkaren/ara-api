@@ -1,4 +1,5 @@
 const { models } = require("../../../libs/sequelize");
+const { parsePagination, buildPagination } = require("../../utils/pagination");
 
 async function createPost(data) {
   const post = await models.Post.create(data);
@@ -6,15 +7,23 @@ async function createPost(data) {
   return post;
 }
 
-async function listPosts(author_id) {
+async function listPosts(author_id, requestedPagination) {
   const query = getCommonQuery();
+  const pagination = parsePagination(requestedPagination);
 
   if (author_id) {
     query.where = { author_id };
   }
 
-  const posts = await models.Post.findAll(query);
-  return posts;
+  query.limit = pagination.limit;
+  query.offset = pagination.offset;
+  query.order = [["createdAt", "DESC"]];
+
+  const result = await models.Post.findAndCountAll(query);
+  return {
+    data: result.rows,
+    pagination: buildPagination({ ...pagination, count: result.count }),
+  };
 }
 
 async function getPost(id, options = {}) {
