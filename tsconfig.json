@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleDetection": "force",
+    "outDir": "dist",
+    "rootDir": ".",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "checkJs": false,
+    "sourceMap": true,
+    "strict": false,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "api/**/*.ts",
+    "libs/**/*.ts",
+    "config.js",
+    "db/config.js",
+    "db/models/**/*.js",
+    "test/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist", "db/migrations"]
+}
