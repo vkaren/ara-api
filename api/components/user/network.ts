@@ -19,7 +19,7 @@ router.post(
   "/",
   upload.single("profile_photo"),
   validatorHandler(userSchema, "body"),
-  createUser
+  createUser,
 );
 router.patch(
   "/:id",
@@ -27,13 +27,13 @@ router.patch(
   authenticateHandler(authOwner),
   upload.single("profile_photo"),
   validatorHandler(updateUserSchema, "body"),
-  updateUser
+  updateUser,
 );
 router.delete(
   "/:id",
   validatorHandler(getUserSchema, "params"),
   authenticateHandler(authOwner),
-  deleteUser
+  deleteUser,
 );
 
 async function getListUsers(req: Request, res: Response, next: NextFunction) {

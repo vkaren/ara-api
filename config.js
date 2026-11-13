@@ -28,6 +28,14 @@ const config = {
   security: {
     bcryptRounds,
   },
+  mail: {
+    host: process.env.SMTP_HOST,
+    port: Number.parseInt(process.env.SMTP_PORT || "587", 10),
+    secure: process.env.SMTP_SECURE === "true",
+    user: process.env.SMTP_USER,
+    password: process.env.SMTP_PASSWORD,
+    from: process.env.MAIL_FROM,
+  },
   frontend: {
     url: process.env.FRONTEND_URL,
   },
@@ -41,19 +49,23 @@ function validateRuntimeConfig() {
     ["FILES_ROUTE", config.api.filesRoute],
     ["SECRET", config.jwt.secret],
   ];
-  const missing = required
-    .filter(([, value]) => !value)
-    .map(([name]) => name);
+  const missing = required.filter(([, value]) => !value).map(([name]) => name);
 
   if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+    throw new Error(
+      `Missing required environment variables: ${missing.join(", ")}`,
+    );
   }
 
   if (config.jwt.secret.length < 32) {
     throw new Error("SECRET must contain at least 32 characters");
   }
 
-  if (!Number.isInteger(bcryptRounds) || bcryptRounds < 10 || bcryptRounds > 15) {
+  if (
+    !Number.isInteger(bcryptRounds) ||
+    bcryptRounds < 10 ||
+    bcryptRounds > 15
+  ) {
     throw new Error("BCRYPT_ROUNDS must be an integer between 10 and 15");
   }
 }

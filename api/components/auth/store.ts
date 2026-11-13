@@ -1,6 +1,7 @@
 import type {
   AuthInput,
   AuthLookupQuery,
+  PasswordResetRecord,
   RequestOptions,
   UpdateAuthInput,
 } from "../../types";
@@ -47,9 +48,44 @@ async function deleteAuth(user_id: number, options: RequestOptions = {}) {
   return authDeleted;
 }
 
+async function getByResetTokenHash(
+  password_reset_token_hash: string
+): Promise<PasswordResetRecord | null> {
+  return models.Auth.findOne({
+    where: { password_reset_token_hash },
+  });
+}
+
+async function setResetToken(
+  user_id: number,
+  password_reset_token_hash: string,
+  password_reset_expires_at: Date,
+  options: RequestOptions = {}
+) {
+  const auth = await getAuth(user_id, options);
+  return auth.update(
+    { password_reset_token_hash, password_reset_expires_at },
+    options
+  );
+}
+
+async function clearResetToken(user_id: number, options: RequestOptions = {}) {
+  const auth = await getAuth(user_id, options);
+  return auth.update(
+    {
+      password_reset_token_hash: null,
+      password_reset_expires_at: null,
+    },
+    options
+  );
+}
+
 module.exports = {
   create: createAuth,
   get: getAuth,
   update: updateAuth,
   delete: deleteAuth,
+  getByResetTokenHash,
+  setResetToken,
+  clearResetToken,
 };

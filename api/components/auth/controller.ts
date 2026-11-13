@@ -1,14 +1,24 @@
 import type {
   AuthInput,
   AuthRecord,
+  ForgotPasswordInput,
   LoginInput,
   RequestOptions,
+  ResetPasswordInput,
   UpdateAuthInput,
 } from "../../types";
+import type { Transaction } from "sequelize";
+import {
+  createPasswordResetToken,
+  hashPasswordResetToken,
+} from "../../utils/password-reset";
 
 const bcrypt = require("bcrypt");
 const boom = require("@hapi/boom");
 const auth = require("../../auth");
+const sequelize = require("../../../libs/sequelize");
+const userStore = require("../user/store");
+const mailer = require("../../../libs/mailer");
 const {
   security: { bcryptRounds },
 } = require("../../../config");
@@ -38,7 +48,7 @@ async function login({ username, password }: LoginInput) {
 
 async function create(
   { user_id, username, password }: AuthInput,
-  options: RequestOptions = {}
+  options: RequestOptions = {},
 ) {
   const data = {
     user_id,
@@ -53,7 +63,7 @@ async function create(
 
 async function update(
   { user_id, username, password }: UpdateAuthInput,
-  options: RequestOptions = {}
+  options: RequestOptions = {},
 ) {
   const data: Partial<Pick<AuthRecord, "username" | "password">> = {};
 
@@ -75,6 +85,59 @@ async function deleteAuth(user_id: number, options: RequestOptions = {}) {
   return deletedAuth;
 }
 
+async function requestPasswordReset({
+  email,
+}: ForgotPasswordInput): Promise<{ message: string }> {
+  const message =
+    "If an account exists for this email, a password reset email has been sent.";
+  const user = await userStore.getByEmail(email);
+
+  if (!user) {
+    return { message };
+  }
+
+  const authRecord = await store.get(user.id);
+
+  if (!authRecord) {
+    return { message };
+  }
+
+  const { token, tokenHash, expiresAt } = createPasswordResetToken();
+
+  await store.setResetToken(authRecord.user_id, tokenHash, expiresAt);
+  try {
+    await mailer.sendPasswordResetEmail({ to: email, token });
+  } catch (error) {
+    console.error("Unable to send password reset email", error);
+  }
+
+  return { message };
+}
+
+async function resetPassword({
+  token,
+  password,
+}: ResetPasswordInput): Promise<{ message: string }> {
+  const authRecord = await store.getByResetTokenHash(
+    hashPasswordResetToken(token),
+  );
+
+  if (
+    !authRecord ||
+    !authRecord.password_reset_expires_at ||
+    authRecord.password_reset_expires_at.getTime() <= Date.now()
+  ) {
+    throw boom.unauthorized("Invalid or expired password reset token");
+  }
+
+  await sequelize.transaction(async (transaction: Transaction) => {
+    await update({ user_id: authRecord.user_id, password }, { transaction });
+    await store.clearResetToken(authRecord.user_id, { transaction });
+  });
+
+  return { message: "Password has been reset successfully" };
+}
+
 async function encodePassword(password: string) {
   return await bcrypt.hash(password, bcryptRounds);
 }
@@ -84,4 +147,6 @@ module.exports = {
   login,
   update,
   delete: deleteAuth,
+  requestPasswordReset,
+  resetPassword,
 };

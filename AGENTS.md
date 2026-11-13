@@ -27,6 +27,8 @@ Tests use Node's built-in `node:test` runner and are authored in TypeScript. The
 
 Pagination is implemented only for `GET /post` and `GET /notification/:user_id`. Both endpoints accept `page` and `limit`; the maximum limit is 100. Do not add pagination to other resources without an explicit requirement.
 
+Password recovery uses `POST /auth/forgot-password` and `POST /auth/reset-password`. New users require a normalized unique email; existing users may have a null email until they update it. Reset tokens must be generated with a cryptographically secure random source, stored only as hashes, expire after one hour, and be invalidated after use. The forgot-password response must not reveal whether an account exists. SMTP configuration is required to deliver reset emails, and recovery requests use a rate limiter that does not reset after successful responses.
+
 ## Commit & Pull Request Guidelines
 
 Recent commits use short, imperative descriptions such as `Cors`, `User route fixed`, and `fix authorization and middleware error flow`. Follow that concise style while stating the behavior changed. Pull requests should explain the change, identify migrations or configuration changes, list verification steps/commands, and include request/response examples or screenshots when the API or `public/` behavior changes.

@@ -18,6 +18,11 @@ const UserSchema = {
     type: DataTypes.STRING,
     unique: true,
   },
+  email: {
+    allowNull: true,
+    type: DataTypes.STRING,
+    unique: true,
+  },
   bio: {
     allowNull: true,
     type: DataTypes.STRING,

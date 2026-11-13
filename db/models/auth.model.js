@@ -22,6 +22,14 @@ const AuthSchema = {
     allowNull: false,
     type: DataTypes.STRING,
   },
+  password_reset_token_hash: {
+    allowNull: true,
+    type: DataTypes.STRING,
+  },
+  password_reset_expires_at: {
+    allowNull: true,
+    type: DataTypes.DATE,
+  },
 };
 
 class Auth extends Model {

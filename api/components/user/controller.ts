@@ -19,10 +19,7 @@ async function listUsers({ filter = null }: { filter?: string | null }) {
   return list;
 }
 
-async function getUser(
-  { id }: { id: EntityId },
-  options: RequestOptions = {}
-) {
+async function getUser({ id }: { id: EntityId }, options: RequestOptions = {}) {
   const user = await store.get(id, options);
 
   if (!user) {
@@ -35,16 +32,19 @@ async function getUser(
 async function createUser({
   nickname,
   username,
+  email,
   password,
   bio,
   profile_photo,
 }: UserInput) {
   return sequelize.transaction(async (transaction: Transaction) => {
     await isUsernameAlreadyCreated(username, { transaction });
+    await isEmailAlreadyCreated(email, { transaction });
 
     const data: UserPersistenceInput = {
       nickname,
       username,
+      email,
     };
 
     if (bio) {
@@ -63,7 +63,7 @@ async function createUser({
         username: newUser.username,
         password,
       },
-      { transaction }
+      { transaction },
     );
 
     return newUser;
@@ -74,6 +74,7 @@ async function updateUser({
   id,
   nickname,
   username,
+  email,
   password,
   bio,
   profile_photo,
@@ -90,6 +91,11 @@ async function updateUser({
       authData.username = username;
     }
 
+    if (email) {
+      await isEmailAlreadyCreated(email, { transaction }, Number(id));
+      userData.email = email;
+    }
+
     if (password) {
       authData.password = password;
     }
@@ -97,7 +103,7 @@ async function updateUser({
     if (Object.keys(authData).length > 0) {
       await authController.update(
         { ...authData, user_id: id },
-        { transaction }
+        { transaction },
       );
     }
 
@@ -127,12 +133,30 @@ async function deleteUser({ id }: { id: EntityId }) {
 
 async function isUsernameAlreadyCreated(
   username: string,
-  options: RequestOptions = {}
+  options: RequestOptions = {},
 ) {
   const isAlreadyCreated = await store.get(username, options);
 
   if (isAlreadyCreated) {
     throw boom.conflict(`Username ${username} already exists`);
+  }
+
+  return false;
+}
+
+async function isEmailAlreadyCreated(
+  email: string,
+  options: RequestOptions = {},
+  excludeUserId?: number,
+) {
+  const isAlreadyCreated = await store.getByEmail(
+    email,
+    options,
+    excludeUserId,
+  );
+
+  if (isAlreadyCreated) {
+    throw boom.conflict("Email already exists");
   }
 
   return false;

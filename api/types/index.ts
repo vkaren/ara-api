@@ -27,6 +27,7 @@ export type User = {
   id: number;
   nickname: string;
   username: string;
+  email: string | null;
   bio: string | null;
   profile_photo: string | null;
 };
@@ -50,6 +51,13 @@ export type AuthLookupQuery = {
   };
 };
 
+export type PasswordResetRecord = {
+  user_id: number;
+  username: string;
+  password_reset_token_hash: string;
+  password_reset_expires_at: Date;
+};
+
 export type AuthTokenPayload = {
   id: number;
   username: string;
@@ -57,6 +65,15 @@ export type AuthTokenPayload = {
 
 export type LoginInput = {
   username: string;
+  password: string;
+};
+
+export type ForgotPasswordInput = {
+  email: string;
+};
+
+export type ResetPasswordInput = {
+  token: string;
   password: string;
 };
 
@@ -74,15 +91,17 @@ export type UserInput = {
   nickname: string;
   username: string;
   password: string;
+  email: string;
   bio?: string;
   profile_photo?: string | null;
 };
 
 export type UserPersistenceInput = Pick<User, "nickname" | "username"> &
+  Pick<User, "email"> &
   Partial<Pick<User, "bio" | "profile_photo">>;
 
 export type UserUpdateData = Partial<
-  Pick<User, "nickname" | "username" | "bio" | "profile_photo">
+  Pick<User, "nickname" | "username" | "email" | "bio" | "profile_photo">
 >;
 
 export type UpdateUserInput = Partial<Omit<UserInput, "password">> & {

@@ -30,7 +30,7 @@ npm install
 cp .env.example .env
 ```
 
-Configure the database and application values in `.env`. At minimum, configure `DATABASE_URL` for the runtime connection or the `DB_DEV_*` variables used by Sequelize CLI migrations, along with `SECRET`, `PORT`, `API_URL`, and `FRONTEND_URL`.
+Configure the database and application values in `.env`. At minimum, configure `DATABASE_URL` for the runtime connection or the `DB_DEV_*` variables used by Sequelize CLI migrations, along with `SECRET`, `PORT`, `API_URL`, and `FRONTEND_URL`. Password recovery additionally requires `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, and `MAIL_FROM`.
 
 Run the migrations:
 
@@ -66,7 +66,7 @@ All routes are mounted at the server root.
 
 | Resource | Endpoints |
 | --- | --- |
-| Authentication | `POST /auth/login` |
+| Authentication | `POST /auth/login`, `POST /auth/forgot-password`, `POST /auth/reset-password` |
 | Users | `GET /user`, `GET /user/:id`, `POST /user`, `PATCH /user/:id`, `DELETE /user/:id` |
 | Posts | `GET /post`, `GET /post/:id`, `POST /post`, `DELETE /post` |
 | Replies | `POST /reply`, `DELETE /reply` |
@@ -78,6 +78,27 @@ Protected endpoints expect a JWT header:
 
 ```http
 Authorization: Bearer <token>
+```
+
+## Password recovery
+
+`POST /auth/forgot-password` accepts an email and always returns the same generic response, whether or not the account exists:
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+The API stores only a SHA-256 hash of the reset token. Tokens expire after one hour and are invalidated after a successful reset. The email contains a link to the frontend at `/reset-password?token=<token>`.
+
+`POST /auth/reset-password` accepts the token from the email and the new password:
+
+```json
+{
+  "token": "token-from-email",
+  "password": "new-password"
+}
 ```
 
 ## Pagination

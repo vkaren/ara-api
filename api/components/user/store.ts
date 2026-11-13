@@ -123,10 +123,28 @@ async function getUser(param: number | string, options: RequestOptions = {}) {
   }
 }
 
+async function getUserByEmail(
+  email: string,
+  options: RequestOptions = {},
+  excludeUserId?: number
+) {
+  const where: Record<string, unknown> = { email };
+
+  if (excludeUserId) {
+    where.id = { [Op.ne]: excludeUserId };
+  }
+
+  return models.User.findOne({
+    where,
+    ...options,
+  });
+}
+
 module.exports = {
   create: createUser,
   update: updateUser,
   delete: deleteUser,
   list: listUsers,
   get: getUser,
+  getByEmail: getUserByEmail,
 };
