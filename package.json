@@ -7,7 +7,7 @@
     "dev": "tsx watch api/index.ts",
     "start": "node dist/api/index.js",
     "test": "tsc --outDir .test-dist && node --test .test-dist/test/*.test.js",
-    "build": "npm install && tsc && npm run migrations:run",
+    "build": "npm install --include=dev && tsc && npm run migrations:run",
     "migrations:generate": "sequelize-cli migration:generate --name",
     "migrations:run": "sequelize-cli db:migrate",
     "migrations:revert": "sequelize-cli db:migrate:undo",
